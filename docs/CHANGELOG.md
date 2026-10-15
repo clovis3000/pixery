@@ -20,6 +20,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Version numbers 
 ## [Unreleased]
 
 ### Added
+- GPT Image 2 (`gpt-image-2`) via the OpenAI provider
 - Initial project setup with Rust + Tauri backend and React frontend
 - CLI interface for image generation (`pixery generate`)
 - GUI gallery for browsing generated images

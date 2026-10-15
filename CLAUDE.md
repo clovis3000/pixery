@@ -121,6 +121,7 @@ User-facing model names differ from API model IDs. This is intentional for usabi
 | `fal-ai/z-image/turbo` | (same) or `/image-to-image` | fal.ai | $0.005/MP |
 | `dall-e-3` | (same) | OpenAI | $0.04 |
 | `gpt-image-1` | (same) | OpenAI | $0.02 |
+| `gpt-image-2` | (same) | OpenAI | ~$0.05 (token-billed; low ≈ $0.006, high ≈ $0.21) |
 
 The mapping lives in each provider's `resolve_model()` function. When Gemini/OpenAI rename models (which happens), update there.
 

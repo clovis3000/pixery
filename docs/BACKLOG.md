@@ -89,6 +89,7 @@ Ideas and features for future consideration.
 Items shipped, organized by version.
 
 ### Unreleased
+- [x] GPT Image 2 (`gpt-image-2`) - new OpenAI model; GPT image models reject `response_format`, so it's now only sent to DALL-E
 - [x] Compare view wired - Cmd+click 2 images, "Compare" button in batch bar, `c` keyboard shortcut
 - [x] Negative prompt support - full stack: DB column, CLI `--negative` flag, provider passthrough, GUI Advanced section in GenerateModal
 - [x] Aspect ratio presets - `pixery generate --ratio portrait` with SDXL native resolutions; fal.ai maps to image_size names

@@ -409,6 +409,15 @@ impl ModelInfo {
                 cost_per_image: 0.02,
                 max_refs: 0,
             },
+            // Token-billed ($30/1M image output); quality is left on `auto`, so this is the
+            // ~medium-quality 1024x1024 estimate (low ≈ $0.006, high ≈ $0.21).
+            ModelInfo {
+                id: "gpt-image-2".into(),
+                provider: Provider::OpenAI,
+                display_name: "GPT Image 2".into(),
+                cost_per_image: 0.05,
+                max_refs: 0,
+            },
             // Self-hosted models - requires SELFHOSTED_API_URL or GUI settings
             // IP-Adapter supports 1 reference image
             ModelInfo {

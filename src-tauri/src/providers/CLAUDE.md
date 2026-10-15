@@ -34,7 +34,9 @@ This polymorphism is intentional but non-obvious. The `strength` parameter only 
 OpenAI
 ----------
 
-**DO NOT** expect reference support — DALL-E 3 and gpt-image-1 ignore the `reference_paths` parameter entirely. No warning is logged; references are silently dropped. The parameter exists for interface consistency across providers.
+**DO NOT** expect reference support — DALL-E 3, gpt-image-1 and gpt-image-2 ignore the `reference_paths` parameter entirely. No warning is logged; references are silently dropped. The parameter exists for interface consistency across providers. (gpt-image-2 supports `/v1/images/edits` upstream; pixery doesn't call it.)
+
+**DO NOT** send `response_format` to `gpt-image-*` models — the API returns 400 "Unknown parameter: 'response_format'" (verified against gpt-image-2, 2026-10-15). GPT image models always return base64; only DALL-E accepts the param. `accepts_response_format()` gates it by model-ID prefix, so a future `gpt-image-*` model inherits the right behaviour.
 
 **DO NOT** wrap base64 in data URIs — OpenAI expects bare base64 strings, like Gemini.
 

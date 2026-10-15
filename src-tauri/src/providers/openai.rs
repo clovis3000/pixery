@@ -13,8 +13,15 @@ fn resolve_model(model: &str) -> &str {
         "dalle" | "dalle3" | "dall-e-3" => "dall-e-3",
         "dalle2" | "dall-e-2" => "dall-e-2",
         "gpt-image" | "gpt-image-1" => "gpt-image-1",
+        "gpt-image-2" | "gptimage2" => "gpt-image-2",
         _ => model,
     }
+}
+
+/// GPT image models always return base64 and reject `response_format` with a 400
+/// ("Unknown parameter") — only the DALL-E models accept it.
+fn accepts_response_format(model_id: &str) -> bool {
+    !model_id.starts_with("gpt-image")
 }
 
 #[derive(Serialize)]
@@ -23,7 +30,8 @@ struct OpenAIRequest {
     prompt: String,
     n: u32,
     size: String,
-    response_format: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    response_format: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     quality: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -71,7 +79,7 @@ pub async fn generate(
         prompt: prompt.to_string(),
         n: 1,
         size: "1024x1024".to_string(),
-        response_format: "b64_json".to_string(),
+        response_format: accepts_response_format(model_id).then(|| "b64_json".to_string()),
         quality: if model_id == "dall-e-3" {
             Some("standard".to_string())
         } else {
