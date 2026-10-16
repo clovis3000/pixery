@@ -29,6 +29,10 @@ The current 2-minute timeout (`MAX_POLL_ATTEMPTS * 500ms`) works for most models
 
 This polymorphism is intentional but non-obvious. The `strength` parameter only applies to image-to-image; it's silently ignored for text-to-image.
 
+**DO NOT** snap sizes to fal's named presets (`landscape_4_3` etc.) — pixery's 3:2/2:3 ratios match none of them, and the old threshold matcher silently fell back to square (fixed 2026-10-16). Send exact `{width, height}`.
+
+**DO NOT** send `image_size` to a ratio-string endpoint — Imagen 4, Nano Banana 2 and FLUX 1.1 Pro Ultra ignore it and use their default ratio (Ultra did this unnoticed until 2026-10-16). A new fal model needs its schema checked (`https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=<id>`) and, if ratio-based, an entry in `supported_aspect_ratios()`.
+
 **DO** wrap base64 as data URIs — fal.ai expects `data:{mime};base64,{encoded}` format, unlike Gemini/OpenAI.
 
 OpenAI

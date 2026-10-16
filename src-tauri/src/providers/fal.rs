@@ -73,7 +73,7 @@ struct FalRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     image_urls: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    image_size: Option<String>,
+    image_size: Option<ImageSize>,
     /// Aspect ratio for models that use ratio strings (e.g. Imagen 4: "1:1", "16:9")
     #[serde(skip_serializing_if = "Option::is_none")]
     aspect_ratio: Option<String>,
@@ -107,36 +107,53 @@ fn get_api_key() -> Result<String> {
     std::env::var("FAL_KEY").context("FAL_KEY environment variable not set")
 }
 
-/// Map pixel dimensions to fal.ai image_size string names
-fn resolve_image_size(width: Option<i32>, height: Option<i32>) -> String {
+/// fal.ai `image_size`: a named preset or exact dimensions. Every image_size endpoint
+/// pixery uses accepts `{width, height}` (checked against fal's OpenAPI schemas 2026-10-16),
+/// so pass the exact size rather than snapping to the nearest preset.
+#[derive(Serialize)]
+#[serde(untagged)]
+enum ImageSize {
+    Named(&'static str),
+    Custom { width: i32, height: i32 },
+}
+
+fn resolve_image_size(width: Option<i32>, height: Option<i32>) -> ImageSize {
     match (width, height) {
-        (Some(w), Some(h)) => {
-            let ratio = w as f64 / h as f64;
-            if (ratio - 1.0).abs() < 0.1 { "square_hd".to_string() }
-            else if (ratio - 4.0/3.0).abs() < 0.1 { "landscape_4_3".to_string() }
-            else if (ratio - 3.0/4.0).abs() < 0.1 { "portrait_4_3".to_string() }
-            else if (ratio - 16.0/9.0).abs() < 0.1 { "landscape_16_9".to_string() }
-            else if (ratio - 9.0/16.0).abs() < 0.1 { "portrait_16_9".to_string() }
-            else { "square_hd".to_string() }
-        }
-        _ => "square_hd".to_string(),
+        (Some(width), Some(height)) => ImageSize::Custom { width, height },
+        _ => ImageSize::Named("square_hd"),
     }
 }
 
-/// Map pixel dimensions to aspect ratio strings (e.g. "1:1", "16:9") for Imagen 4
-fn resolve_aspect_ratio(width: Option<i32>, height: Option<i32>) -> String {
-    match (width, height) {
-        (Some(w), Some(h)) => {
-            let ratio = w as f64 / h as f64;
-            if (ratio - 1.0).abs() < 0.1 { "1:1".to_string() }
-            else if (ratio - 4.0/3.0).abs() < 0.1 { "4:3".to_string() }
-            else if (ratio - 3.0/4.0).abs() < 0.1 { "3:4".to_string() }
-            else if (ratio - 16.0/9.0).abs() < 0.1 { "16:9".to_string() }
-            else if (ratio - 9.0/16.0).abs() < 0.1 { "9:16".to_string() }
-            else { "1:1".to_string() }
-        }
-        _ => "1:1".to_string(),
+/// Aspect ratios each ratio-string endpoint accepts, from fal's schemas (Imagen 4 publishes
+/// none; its list is the set known to work).
+fn supported_aspect_ratios(model_id: &str) -> Option<&'static [&'static str]> {
+    if model_id.starts_with("fal-ai/imagen4/") {
+        Some(&["1:1", "4:3", "3:4", "16:9", "9:16"])
+    } else if model_id == "fal-ai/flux-pro/v1.1-ultra" {
+        Some(&["21:9", "16:9", "4:3", "3:2", "1:1", "2:3", "3:4", "9:16", "9:21"])
+    } else if model_id == "fal-ai/nano-banana-2" {
+        Some(&["21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16"])
+    } else {
+        None
     }
+}
+
+/// Pick the supported ratio closest to width/height (compared in log space, so 3:2 vs 4:3
+/// and 2:3 vs 3:4 are judged symmetrically).
+fn resolve_aspect_ratio(width: Option<i32>, height: Option<i32>, supported: &[&'static str]) -> String {
+    let (Some(w), Some(h)) = (width, height) else {
+        return "1:1".to_string();
+    };
+    let target = (w as f64 / h as f64).ln();
+    let ratio_of = |r: &str| {
+        let (a, b) = r.split_once(':').unwrap();
+        (a.parse::<f64>().unwrap() / b.parse::<f64>().unwrap()).ln()
+    };
+    supported
+        .iter()
+        .min_by(|a, b| (ratio_of(a) - target).abs().total_cmp(&(ratio_of(b) - target).abs()))
+        .unwrap_or(&"1:1")
+        .to_string()
 }
 
 pub async fn generate(
@@ -192,13 +209,13 @@ pub async fn generate(
         None
     };
 
-    let uses_aspect_ratio = model_id.starts_with("fal-ai/imagen4/") || model_id == "fal-ai/nano-banana-2";
+    let aspect_ratios = supported_aspect_ratios(model_id);
     let request = FalRequest {
         prompt: prompt.to_string(),
         image_url,
         image_urls,
-        image_size: if uses_aspect_ratio { None } else { Some(resolve_image_size(width, height)) },
-        aspect_ratio: if uses_aspect_ratio { Some(resolve_aspect_ratio(width, height)) } else { None },
+        image_size: if aspect_ratios.is_some() { None } else { Some(resolve_image_size(width, height)) },
+        aspect_ratio: aspect_ratios.map(|supported| resolve_aspect_ratio(width, height, supported)),
         strength,
         resolution: if model_id == "fal-ai/nano-banana-2" { Some("1K".to_string()) } else { None },
     };

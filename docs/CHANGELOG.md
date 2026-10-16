@@ -53,6 +53,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Version numbers 
 - Gallery thumbnails now centered (was left-aligned with gap on right)
 
 ### Fixed
+- fal: `--ratio landscape`/`portrait` (3:2, 2:3) came out square on every `image_size` model; exact dimensions are now sent
+- fal: FLUX 1.1 Pro Ultra ignored `--ratio` entirely (it takes `aspect_ratio`, not `image_size`); ratio-string models now pick the nearest ratio they support
 - Self-hosted: `enable_attention_slicing()` incompatible with IP-Adapter attention processors — now skipped when IP-Adapter is loaded
 - Self-hosted: dummy zero-scale image passed when IP-Adapter loaded but no reference provided (diffusers requires `image_embeds` for every generation)
 - Self-hosted: Pony model filename updated to match current HuggingFace repo (`ponyDiffusionV6XL_v6StartWithThisOne.safetensors`)
