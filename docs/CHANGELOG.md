@@ -21,6 +21,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Version numbers 
 
 ### Added
 - GPT Image 2 (`gpt-image-2`) via the OpenAI provider
+- `gui` cargo feature (on by default); `cargo build --no-default-features` builds a headless CLI with no webkit/GTK, for servers
 - Initial project setup with Rust + Tauri backend and React frontend
 - CLI interface for image generation (`pixery generate`)
 - GUI gallery for browsing generated images

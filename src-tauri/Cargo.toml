@@ -13,14 +13,27 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 name = "pixery"
 path = "src/main.rs"
 
+[features]
+# The GUI is a layer over the CLI core, not a requirement of it.
+# `cargo build --no-default-features` builds a headless CLI with no webkit/GTK.
+default = ["gui"]
+gui = [
+    "dep:tauri",
+    "dep:tauri-build",
+    "dep:tauri-plugin-shell",
+    "dep:tauri-plugin-notification",
+    "dep:tauri-plugin-dialog",
+    "dep:notify-debouncer-mini",
+]
+
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2", features = [], optional = true }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset", "devtools"] }
-tauri-plugin-shell = "2"
-tauri-plugin-notification = "2"
-tauri-plugin-dialog = "2"
+tauri = { version = "2", features = ["protocol-asset", "devtools"], optional = true }
+tauri-plugin-shell = { version = "2", optional = true }
+tauri-plugin-notification = { version = "2", optional = true }
+tauri-plugin-dialog = { version = "2", optional = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = { version = "0.31", features = ["bundled"] }
@@ -37,7 +50,7 @@ slug = "0.1"
 thiserror = "1"
 anyhow = "1"
 regex = "1"
-notify-debouncer-mini = "0.4"
+notify-debouncer-mini = { version = "0.4", optional = true }
 
 [profile.release]
 strip = true

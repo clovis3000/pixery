@@ -1,17 +1,22 @@
+#[cfg(feature = "gui")]
 use std::sync::Mutex;
 
 pub mod archive;
+#[cfg(feature = "gui")]
 mod commands;
 pub mod db;
 pub mod models;
 pub mod providers;
+#[cfg(feature = "gui")]
 mod watcher;
 pub mod workflow;
 
 pub mod cli;
 
+#[cfg(feature = "gui")]
 use commands::AppState;
 
+#[cfg(feature = "gui")]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Ensure directories exist

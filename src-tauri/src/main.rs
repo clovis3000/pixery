@@ -38,9 +38,16 @@ fn main() {
                 std::process::exit(1);
             }
         }
+        #[cfg(feature = "gui")]
         None => {
             // GUI mode
             pixery_lib::run()
+        }
+        #[cfg(not(feature = "gui"))]
+        None => {
+            // Headless build: no GUI to fall back to
+            eprintln!("Built without the GUI. Run `pixery --help` for subcommands.");
+            std::process::exit(2);
         }
     }
 }

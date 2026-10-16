@@ -199,6 +199,8 @@ Anti-Patterns
 
 **DO NOT** assume provider APIs are stable - Gemini in particular changes model IDs frequently. The Python backup at `~/tools/imagen-python-backup/` has working model IDs as of Jan 2026 if the Rust ones break.
 
+**DO NOT** use tauri (or `notify-debouncer-mini`) outside `#[cfg(feature = "gui")]` - `cli`, `db`, `archive`, `models`, `providers`, `workflow` must build with `--no-default-features`. That headless build is how pixery runs on magi-box, which has no webkit/GTK (2026-10-16); a tauri import in the core breaks it, and the default Mac build won't notice.
+
 **DO NOT** commit API keys - they live in `~/.env`, not in the repo.
 
 **DO NOT** use `cargo build --release` for release builds - use `npm run tauri build` to produce the proper bundled binary. `cargo check` or `cargo build` in `src-tauri/` is fine for quick compile verification during development, but the release binary at `~/.local/bin/pixery` only updates via the full Tauri build.
