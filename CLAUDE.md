@@ -3,8 +3,8 @@ Pixery
 
 Unified image generation tool with CLI and GUI interfaces. Single Rust binary serves both modes - subcommands for CLI, no args launches GUI. SQLite as single source of truth.
 
-**Location:** `~/tools/pixery/`
-**Binary:** `~/.local/bin/pixery` → `~/tools/pixery/src-tauri/target/release/pixery`
+**Location:** `~/projects/pixery/`
+**Binary:** `~/.local/bin/pixery` → `~/projects/pixery/src-tauri/target/release/pixery`
 **Archive:** `~/media/image-gen/`
 **Skill:** `~/.claude/commands/pixery.md`
 **Repo:** https://github.com/rvdemonk/pixery
@@ -40,7 +40,7 @@ Architecture
 ----------
 
 ```
-~/tools/pixery/
+~/projects/pixery/
 ├── docs/
 │   ├── CHANGELOG.md         # What shipped, by version
 │   └── BACKLOG.md           # Prioritized work items
@@ -197,7 +197,7 @@ Anti-Patterns
 
 **DO NOT** run async code in CLI handlers without a runtime - `cli.rs` creates a `tokio::runtime::Runtime` and uses `block_on()`.
 
-**DO NOT** assume provider APIs are stable - Gemini in particular changes model IDs frequently. The Python backup at `~/tools/imagen-python-backup/` has working model IDs as of Jan 2026 if the Rust ones break.
+**DO NOT** assume provider APIs are stable - Gemini in particular changes model IDs frequently. The Python backup that once held working model IDs (Jan 2026) has since been deleted; check the provider's model list instead.
 
 **DO NOT** use tauri (or `notify-debouncer-mini`) outside `#[cfg(feature = "gui")]` - `cli`, `db`, `archive`, `models`, `providers`, `workflow` must build with `--no-default-features`. That headless build is how pixery runs on magi-box, which has no webkit/GTK (2026-10-16); a tauri import in the core breaks it, and the default Mac build won't notice.
 
@@ -223,7 +223,7 @@ GUI Keyboard Shortcuts
 Migration Notes
 ----------
 
-The Python version is backed up at `~/tools/imagen-python-backup/`. The old SQLite database is at `~/media/image-gen/index.sqlite.python-backup` - schema differs (missing `seed`, `width`, `height`, `file_size`, `parent_id`, `starred` columns).
+The Python version's backup has been deleted. The old SQLite database is at `~/media/image-gen/index.sqlite.python-backup` - schema differs (missing `seed`, `width`, `height`, `file_size`, `parent_id`, `starred` columns).
 
 If migrating old data, either:
 1. Write a migration script to ALTER TABLE and backfill

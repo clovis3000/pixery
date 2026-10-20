@@ -6,7 +6,7 @@ API integration layer for external image generation services. Each provider has 
 Gemini
 ----------
 
-**DO NOT** assume model IDs are stable — Gemini renames models frequently. When calls start failing, check the Python backup at `~/tools/imagen-python-backup/` for last-known-working IDs. The `_ => model` fallback silently passes broken IDs through, so failures surface as API errors, not Rust errors.
+**DO NOT** assume model IDs are stable — Gemini renames models frequently. When calls start failing, check the provider's current model list (the Python backup that held last-known-working IDs is gone). The `_ => model` fallback silently passes broken IDs through, so failures surface as API errors, not Rust errors.
 
 **DO NOT** wrap base64 in data URIs — Gemini expects bare base64 strings with MIME type passed separately.
 
